@@ -15,12 +15,26 @@ export default function EditGame() {
   const [image, setImage] = useState(null);
   const [previewImg, setPreviewImg] = useState(null);
 
+  // System Requirements states
+  const [minCpu, setMinCpu] = useState("");
+  const [minGpu, setMinGpu] = useState("");
+  const [minRam, setMinRam] = useState("");
+  const [minStorage, setMinStorage] = useState("");
+
+  const [recCpu, setRecCpu] = useState("");
+  const [recGpu, setRecGpu] = useState("");
+  const [recRam, setRecRam] = useState("");
+  const [recStorage, setRecStorage] = useState("");
+
   const token = localStorage.getItem("token");
   const defaultPlatforms = ["PC", "Mobile", "Console"];
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/games/${id}`).then((res) => {
-      const gameData = res.data;
+  const fetchData = async () => {
+    try {
+      const gameRes = await axios.get(`http://localhost:3000/api/games/${id}`);
+      const gameData = gameRes.data;
+
       setTitle(gameData.title);
       setDescription(gameData.description);
       setReleaseDate(gameData.releaseDate?.split("T")[0] || "");
@@ -29,12 +43,40 @@ export default function EditGame() {
         gameData.categories?.map((catObj) => catObj.category.id) || []
       );
       setPreviewImg(`http://localhost:3000/uploads/${gameData.img}`);
-    });
+      
+      let sysReqs = gameData.requirements;
+      if (typeof sysReqs === "string") {
+        try {
+          sysReqs = JSON.parse(sysReqs);
+        } catch {
+          sysReqs = [];
+        }
+      }
 
-    axios.get("http://localhost:3000/api/categories").then((res) => {
-      setCategories(res.data);
-    });
-  }, [id]);
+      if (sysReqs && sysReqs.length) {
+        const minReq = sysReqs.find((r) => r.type === "minimum");
+        const recReq = sysReqs.find((r) => r.type === "recommended");
+
+        setMinCpu(minReq?.processor || "");
+        setMinGpu(minReq?.graphics || "");
+        setMinRam(minReq?.memory || "");
+        setMinStorage(minReq?.storage || "");
+
+        setRecCpu(recReq?.processor || "");
+        setRecGpu(recReq?.graphics || "");
+        setRecRam(recReq?.memory || "");
+        setRecStorage(recReq?.storage || "");
+      }
+
+      const categoriesRes = await axios.get("http://localhost:3000/api/categories");
+      setCategories(categoriesRes.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  fetchData();
+}, [id]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -45,20 +87,47 @@ export default function EditGame() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const requirements = [
+      {
+        type: "minimum",
+        os: "", // kosong atau isi sesuai kebutuhan
+        processor: minCpu,
+        graphics: minGpu,
+        memory: minRam,
+        storage: minStorage,
+        additionalNotes: null,
+      },
+      {
+        type: "recommended",
+        os: "",
+        processor: recCpu,
+        graphics: recGpu,
+        memory: recRam,
+        storage: recStorage,
+        additionalNotes: null,
+      },
+    ];
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
     formData.append("releaseDate", releaseDate);
     formData.append("platforms", platform);
+    // formData.append("categories", selectedCategories)
 
     selectedCategories.forEach((catId) =>
-      formData.append("categoryIds", Number(catId))
-    );
-
-    if (image) {
-      formData.append("img", image);
-    }
-
+      formData.append("categories[]", Number(catId))
+  );
+  
+  // Kirim system requirements sebagai JSON string
+  formData.append("requirements", JSON.stringify(requirements));
+  
+  if (image) {
+    formData.append("img", image);
+  }
+  
+  // console.log(selectedCategories)
+  console.log(Object.fromEntries(formData))
     try {
       await axios.put(`http://localhost:3000/api/games/${id}`, formData, {
         headers: {
@@ -164,6 +233,73 @@ export default function EditGame() {
             onChange={handleImageChange}
           />
         </div>
+
+        {/* System Requirements Minimum */}
+        <div>
+          <h3 className="font-semibold mb-1">Minimum Requirements</h3>
+          <input
+            type="text"
+            placeholder="CPU"
+            value={minCpu}
+            onChange={(e) => setMinCpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="GPU"
+            value={minGpu}
+            onChange={(e) => setMinGpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="RAM"
+            value={minRam}
+            onChange={(e) => setMinRam(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Storage"
+            value={minStorage}
+            onChange={(e) => setMinStorage(e.target.value)}
+            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
+          />
+        </div>
+
+        {/* System Requirements Recommended */}
+        <div>
+          <h3 className="font-semibold mb-1">Recommended Requirements</h3>
+          <input
+            type="text"
+            placeholder="CPU"
+            value={recCpu}
+            onChange={(e) => setRecCpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="GPU"
+            value={recGpu}
+            onChange={(e) => setRecGpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="RAM"
+            value={recRam}
+            onChange={(e) => setRecRam(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Storage"
+            value={recStorage}
+            onChange={(e) => setRecStorage(e.target.value)}
+            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
+          />
+        </div>
+
 
         <button
           type="submit"

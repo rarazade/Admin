@@ -14,6 +14,15 @@ const AddGame = () => {
   const [categories, setCategories] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Loading State
 
+  const [minCpu, setMinCpu] = useState("");
+  const [minGpu, setMinGpu] = useState("");
+  const [minRam, setMinRam] = useState("");
+  const [minStorage, setMinStorage] = useState("");
+  const [recCpu, setRecCpu] = useState("");
+  const [recGpu, setRecGpu] = useState("");
+  const [recRam, setRecRam] = useState("");
+  const [recStorage, setRecStorage] = useState("");
+
   const navigate = useNavigate();
   const imageRef = useRef(null);
 
@@ -60,6 +69,27 @@ const AddGame = () => {
 
     setIsSubmitting(true); // ✅ Mulai loading
 
+    const requirements = [
+    {
+      type: "minimum",
+      os: "",
+      processor: minCpu,
+      graphics: minGpu,
+      memory: minRam,
+      storage: minStorage,
+      additionalNotes: null,
+    },
+    {
+      type: "recommended",
+      os: "",
+      processor: recCpu,
+      graphics: recGpu,
+      memory: recRam,
+      storage: recStorage,
+      additionalNotes: null,
+    },
+  ];
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
@@ -67,6 +97,8 @@ const AddGame = () => {
     formData.append("platforms", JSON.stringify([platform]));
     formData.append("categoryIds", JSON.stringify(category));
     formData.append("img", img);
+
+    formData.append("requirements", JSON.stringify(requirements));
 
     try {
       const token = localStorage.getItem("token");
@@ -173,6 +205,71 @@ const AddGame = () => {
             onChange={handleMainImageChange}
             className="w-full text-gray-300"
             required
+          />
+        </div>
+
+        {/* ✅ Form System Requirement */}
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-2">Minimum Requirements</h2>
+          <input
+            type="text"
+            placeholder="CPU"
+            value={minCpu}
+            onChange={(e) => setMinCpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="GPU"
+            value={minGpu}
+            onChange={(e) => setMinGpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="RAM"
+            value={minRam}
+            onChange={(e) => setMinRam(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Storage"
+            value={minStorage}
+            onChange={(e) => setMinStorage(e.target.value)}
+            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
+          />
+        </div>
+
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">Recommended Requirements</h2>
+          <input
+            type="text"
+            placeholder="CPU"
+            value={recCpu}
+            onChange={(e) => setRecCpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="GPU"
+            value={recGpu}
+            onChange={(e) => setRecGpu(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="RAM"
+            value={recRam}
+            onChange={(e) => setRecRam(e.target.value)}
+            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
+          />
+          <input
+            type="text"
+            placeholder="Storage"
+            value={recStorage}
+            onChange={(e) => setRecStorage(e.target.value)}
+            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
           />
         </div>
 
