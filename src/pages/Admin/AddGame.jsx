@@ -92,10 +92,10 @@ const AddGame = () => {
         },
         recReq: {
           os: "",
-          processor: minCpu,
-          graphics: minGpu,
-          memory: minRam,
-          storage: minStorage,
+          processor: recCpu,
+          graphics: recGpu,
+          memory: recRam,
+          storage: recStorage,
           additionalNotes: null,
         },
       }
