@@ -54,7 +54,7 @@ const EditNews = () => {
         formData.append(key, form[key]);
       }
       if (image) {
-        formData.append("image", image);
+        formData.append("img", image);
       }
 
       const token = localStorage.getItem("token");

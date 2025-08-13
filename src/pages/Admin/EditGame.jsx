@@ -47,19 +47,13 @@ export default function EditGame() {
         gameData.categories?.map((catObj) => catObj.category.id) || []
       );
       setPreviewImg(`http://localhost:3000/uploads/${gameData.img}`);
-
+      // Memasukkan value dari data requirements response ke variable
       let sysReqs = gameData.requirements;
-      if (typeof sysReqs === "string") {
-        try {
-          sysReqs = JSON.parse(sysReqs);
-        } catch {
-          sysReqs = [];
-        }
-      }
-
-      if (sysReqs && sysReqs.length) {
-        const minReq = sysReqs.find((r) => r.type === "minimum");
-        const recReq = sysReqs.find((r) => r.type === "recommended");
+      
+      // mengecek apakah ini requirements untuk pc atau bukan
+      if (Object.keys(sysReqs) == 'PC') {
+        const minReq = sysReqs.PC.minReq;
+        const recReq = sysReqs.PC.recReq;
 
         setMinCpu(minReq?.processor || "");
         setMinGpu(minReq?.graphics || "");
@@ -112,26 +106,28 @@ export default function EditGame() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const requirements = [
-      {
-        type: "minimum",
-        os: "", // kosong atau isi sesuai kebutuhan
-        processor: minCpu,
-        graphics: minGpu,
-        memory: minRam,
-        storage: minStorage,
-        additionalNotes: null,
-      },
-      {
-        type: "recommended",
-        os: "",
-        processor: recCpu,
-        graphics: recGpu,
-        memory: recRam,
-        storage: recStorage,
-        additionalNotes: null,
-      },
-    ];
+    // Buat variable requirements bertipe json untuk request body 
+    const requirements = {
+      PC: {
+        minReq: {
+          os: "", // kosong atau isi sesuai kebutuhan
+          processor: minCpu,
+          graphics: minGpu,
+          memory: minRam,
+          storage: minStorage,
+          additionalNotes: null,
+        },
+        recReq: 
+        {
+          os: "",
+          processor: recCpu,
+          graphics: recGpu,
+          memory: recRam,
+          storage: recStorage,
+          additionalNotes: null,
+        },
+      }
+    }
 
     const formData = new FormData();
     formData.append("title", title);

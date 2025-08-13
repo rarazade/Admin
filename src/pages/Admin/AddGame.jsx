@@ -79,27 +79,28 @@ const AddGame = () => {
 
     setIsSubmitting(true); // ✅ Mulai loading
 
-    const requirements = [
-    {
-      type: "minimum",
-      os: "",
-      processor: minCpu,
-      graphics: minGpu,
-      memory: minRam,
-      storage: minStorage,
-      additionalNotes: null,
-    },
-    {
-      type: "recommended",
-      os: "",
-      processor: recCpu,
-      graphics: recGpu,
-      memory: recRam,
-      storage: recStorage,
-      additionalNotes: null,
-    },
-  ];
-
+    // Buat variable requirements bertipe json untuk request body 
+    const requirements = {
+      PC : {
+        minReq: {
+          os: "",
+          processor: minCpu,
+          graphics: minGpu,
+          memory: minRam,
+          storage: minStorage,
+          additionalNotes: null,
+        },
+        recReq: {
+          os: "",
+          processor: minCpu,
+          graphics: minGpu,
+          memory: minRam,
+          storage: minStorage,
+          additionalNotes: null,
+        },
+      }
+    }
+    
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
@@ -114,6 +115,7 @@ const AddGame = () => {
       formData.append("videos", file);
     });
 
+    // convert json ke stringJson
     formData.append("requirements", JSON.stringify(requirements));
 
     try {
