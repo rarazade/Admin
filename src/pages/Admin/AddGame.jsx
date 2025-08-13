@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { Requirements } from "../../components/Requirements";
 import axios from "axios";
 
 const AddGame = () => {
@@ -16,20 +17,41 @@ const AddGame = () => {
   const [categories, setCategories] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false); // ✅ Loading State
 
-  const [minCpu, setMinCpu] = useState("");
-  const [minGpu, setMinGpu] = useState("");
-  const [minRam, setMinRam] = useState("");
-  const [minStorage, setMinStorage] = useState("");
-  const [recCpu, setRecCpu] = useState("");
-  const [recGpu, setRecGpu] = useState("");
-  const [recRam, setRecRam] = useState("");
-  const [recStorage, setRecStorage] = useState("");
+  const [requirementsPC, setRequirementsPC] = useState({
+    PC : {
+        minReq: {
+          os: "",
+          processor: "",
+          graphics: "",
+          memory: "",
+          storage: "",
+          additionalNotes: null,
+        },
+        recReq: {
+          os: "",
+          processor: "",
+          graphics: "",
+          memory: "",
+          storage: "",
+          additionalNotes: null,
+        },
+      }
+  })
+
+  const [requirementsMobile, setRequirementsMobile] = useState({
+    Mobile: {
+      requirements: {
+        os: "",
+        memory: ""
+      }
+    }
+  })
 
   const navigate = useNavigate();
   const imageRef = useRef(null);
-
-  const defaultPlatforms = ["PC", "Mobile", "Console"];
-
+  
+  const defaultPlatforms = ["PC", "Mobile", "PC & Mobile"];
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -42,10 +64,10 @@ const AddGame = () => {
         setError("Gagal memuat kategori");
       }
     };
-
+    
     fetchCategories();
   }, []);
-
+  
   const handleCategoryChange = (e) => {
     const { value, checked } = e.target;
     const id = Number(value);
@@ -77,29 +99,9 @@ const AddGame = () => {
       return;
     }
 
-    setIsSubmitting(true); // ✅ Mulai loading
+    // setIsSubmitting(true); // ✅ Mulai loading
 
-    // Buat variable requirements bertipe json untuk request body 
-    const requirements = {
-      PC : {
-        minReq: {
-          os: "",
-          processor: minCpu,
-          graphics: minGpu,
-          memory: minRam,
-          storage: minStorage,
-          additionalNotes: null,
-        },
-        recReq: {
-          os: "",
-          processor: recCpu,
-          graphics: recGpu,
-          memory: recRam,
-          storage: recStorage,
-          additionalNotes: null,
-        },
-      }
-    }
+    // Buat variable requirements bertipe json untuk request body
     
     const formData = new FormData();
     formData.append("title", title);
@@ -114,10 +116,10 @@ const AddGame = () => {
     videos.forEach((file) => {
       formData.append("videos", file);
     });
-
     // convert json ke stringJson
-    formData.append("requirements", JSON.stringify(requirements));
-
+    formData.append("requirements", JSON.stringify(platform === 'PC' ? requirementsPC : platform === 'Mobile' ? requirementsMobile : {...requirementsPC, ...requirementsMobile}));
+    
+    // console.log(formData.get('requirements'))
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post("http://localhost:3000/api/games", formData, {
@@ -248,69 +250,14 @@ const AddGame = () => {
         </div>
 
         {/* ✅ Form System Requirement */}
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold mb-2">Minimum Requirements</h2>
-          <input
-            type="text"
-            placeholder="CPU"
-            value={minCpu}
-            onChange={(e) => setMinCpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="GPU"
-            value={minGpu}
-            onChange={(e) => setMinGpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="RAM"
-            value={minRam}
-            onChange={(e) => setMinRam(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Storage"
-            value={minStorage}
-            onChange={(e) => setMinStorage(e.target.value)}
-            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
-          />
-        </div>
-
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">Recommended Requirements</h2>
-          <input
-            type="text"
-            placeholder="CPU"
-            value={recCpu}
-            onChange={(e) => setRecCpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="GPU"
-            value={recGpu}
-            onChange={(e) => setRecGpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="RAM"
-            value={recRam}
-            onChange={(e) => setRecRam(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Storage"
-            value={recStorage}
-            onChange={(e) => setRecStorage(e.target.value)}
-            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
-          />
-        </div>
+        
+        <Requirements 
+        setRequirementsPC={setRequirementsPC}
+        setRequirementsMobile={setRequirementsMobile}
+        requirementsPC={requirementsPC}
+        requirementsMobile={requirementsMobile}
+        platform={platform}
+        />
 
         <button
           type="submit"

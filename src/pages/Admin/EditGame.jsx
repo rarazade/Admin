@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Requirements } from "../../components/Requirements";
 import axios from "axios";
 
 export default function EditGame() {
@@ -20,51 +21,103 @@ export default function EditGame() {
   const [existingVideos, setExistingVideos] = useState([]);
 
   // System Requirements states
-  const [minCpu, setMinCpu] = useState("");
-  const [minGpu, setMinGpu] = useState("");
-  const [minRam, setMinRam] = useState("");
-  const [minStorage, setMinStorage] = useState("");
+  const [requirementsPC, setRequirementsPC] = useState({
+    PC : {
+        minReq: {
+          os: "",
+          processor: "",
+          graphics: "",
+          memory: "",
+          storage: "",
+          additionalNotes: null,
+        },
+        recReq: {
+          os: "",
+          processor: "",
+          graphics: "",
+          memory: "",
+          storage: "",
+          additionalNotes: null,
+        },
+      }
+  })
 
-  const [recCpu, setRecCpu] = useState("");
-  const [recGpu, setRecGpu] = useState("");
-  const [recRam, setRecRam] = useState("");
-  const [recStorage, setRecStorage] = useState("");
+  const [requirementsMobile, setRequirementsMobile] = useState({
+    Mobile: {
+      requirements: {
+        os: "",
+        memory: ""
+      }
+    }
+  })
 
   const token = localStorage.getItem("token");
-  const defaultPlatforms = ["PC", "Mobile", "Console"];
+  const defaultPlatforms = ["PC", "Mobile", "PC & Mobile"];
 
+  
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const gameRes = await axios.get(`http://localhost:3000/api/games/${id}`);
-      const gameData = gameRes.data;
+    const fetchData = async () => {
+      try {
+        const gameRes = await axios.get(`http://localhost:3000/api/games/${id}`);
+        const gameData = gameRes.data;
+        const updatePC = () => {
+          setRequirementsPC(prev => ({
+              ...prev,
+              PC: {
+                ...prev.PC,
+                minReq: {
+                  ...prev.PC.minReq,
+                  processor: gameData.requirements.PC.minReq.processor || "",
+                  graphics: gameData.requirements.PC.minReq.graphics || "",
+                  memory: gameData.requirements.PC.minReq.memory || "",
+                  storage: gameData.requirements.PC.minReq.storage || ""
+                },
+                recReq: {
+                  ...prev.PC.recReq,
+                  processor: gameData.requirements.PC.recReq.processor || "",
+                  graphics: gameData.requirements.PC.recReq.graphics || "",
+                  memory: gameData.requirements.PC.recReq.memory || "",
+                  storage: gameData.requirements.PC.recReq.storage || ""
+                }
+              }
+            }))
+        }
+      
+        const updateMobile = () => {
+          setRequirementsMobile(prev => ({
+              ...prev,
+              Mobile: {
+                ...prev.Mobile,
+                requirements: {
+                  ...prev.Mobile.requirements,
+                  os: gameData.requirements.Mobile.requirements.os || "",
+                  memory: gameData.requirements.Mobile.requirements.memory || ""
+                },
+              }
+            }))
+        }
 
       setTitle(gameData.title);
       setDescription(gameData.description);
       setReleaseDate(gameData.releaseDate?.split("T")[0] || "");
-      setPlatform(gameData.platforms || "PC");
+      setPlatform(gameData.platforms[0] || "PC");
       setSelectedCategories(
         gameData.categories?.map((catObj) => catObj.category.id) || []
       );
       setPreviewImg(`http://localhost:3000/uploads/${gameData.img}`);
-      // Memasukkan value dari data requirements response ke variable
-      let sysReqs = gameData.requirements;
-      
+
       // mengecek apakah ini requirements untuk pc atau bukan
-      if (Object.keys(sysReqs) == 'PC') {
-        const minReq = sysReqs.PC.minReq;
-        const recReq = sysReqs.PC.recReq;
-
-        setMinCpu(minReq?.processor || "");
-        setMinGpu(minReq?.graphics || "");
-        setMinRam(minReq?.memory || "");
-        setMinStorage(minReq?.storage || "");
-
-        setRecCpu(recReq?.processor || "");
-        setRecGpu(recReq?.graphics || "");
-        setRecRam(recReq?.memory || "");
-        setRecStorage(recReq?.storage || "");
+      if (gameData.platforms[0] == 'PC') {
+        updatePC()
+      } else if (gameData.platforms[0] == 'Mobile') {
+        updateMobile()
+      } else {
+        updatePC()
+        updateMobile()
       }
+
+      console.log(requirementsPC)
+      console.log(requirementsMobile)
 
       setExistingScreenshots(
         gameData.screenshots?.map(
@@ -107,27 +160,6 @@ export default function EditGame() {
     e.preventDefault();
 
     // Buat variable requirements bertipe json untuk request body 
-    const requirements = {
-      PC: {
-        minReq: {
-          os: "", // kosong atau isi sesuai kebutuhan
-          processor: minCpu,
-          graphics: minGpu,
-          memory: minRam,
-          storage: minStorage,
-          additionalNotes: null,
-        },
-        recReq: 
-        {
-          os: "",
-          processor: recCpu,
-          graphics: recGpu,
-          memory: recRam,
-          storage: recStorage,
-          additionalNotes: null,
-        },
-      }
-    }
 
     const formData = new FormData();
     formData.append("title", title);
@@ -141,8 +173,8 @@ export default function EditGame() {
   );
   
   // Kirim system requirements sebagai JSON string
-  formData.append("requirements", JSON.stringify(requirements));
-  
+  formData.append("requirements", JSON.stringify(platform === 'PC' ? requirementsPC : platform === 'Mobile' ? requirementsMobile : {...requirementsPC, ...requirementsMobile}));
+
   if (image) {
     formData.append("img", image);
   };
@@ -331,73 +363,14 @@ if (videos && videos.length > 0) {
           )}
         </div>
 
-
         {/* System Requirements Minimum */}
-        <div>
-          <h3 className="font-semibold mb-1">Minimum Requirements</h3>
-          <input
-            type="text"
-            placeholder="CPU"
-            value={minCpu}
-            onChange={(e) => setMinCpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="GPU"
-            value={minGpu}
-            onChange={(e) => setMinGpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="RAM"
-            value={minRam}
-            onChange={(e) => setMinRam(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Storage"
-            value={minStorage}
-            onChange={(e) => setMinStorage(e.target.value)}
-            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
-          />
-        </div>
-
-        {/* System Requirements Recommended */}
-        <div>
-          <h3 className="font-semibold mb-1">Recommended Requirements</h3>
-          <input
-            type="text"
-            placeholder="CPU"
-            value={recCpu}
-            onChange={(e) => setRecCpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="GPU"
-            value={recGpu}
-            onChange={(e) => setRecGpu(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="RAM"
-            value={recRam}
-            onChange={(e) => setRecRam(e.target.value)}
-            className="w-full p-2 mb-2 rounded bg-[#292F36] border border-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Storage"
-            value={recStorage}
-            onChange={(e) => setRecStorage(e.target.value)}
-            className="w-full p-2 rounded bg-[#292F36] border border-gray-400"
-          />
-        </div>
-
+        <Requirements 
+        setRequirementsPC={setRequirementsPC}
+        setRequirementsMobile={setRequirementsMobile}
+        requirementsPC={requirementsPC}
+        requirementsMobile={requirementsMobile}
+        platform={platform}
+        />
 
         <button
           type="submit"
