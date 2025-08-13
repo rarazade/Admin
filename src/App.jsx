@@ -7,6 +7,8 @@ import AddNews from "./pages/Admin/AddNews";
 import AddCategory from "./pages/Admin/AddCategory";
 import EditGame from "./pages/Admin/EditGame";
 import EditNews from "./pages/Admin/EditNews";
+import EditCategory from "./pages/Admin/EditCategory";
+
 
 export default function App() {
   const location = useLocation();
@@ -31,6 +33,7 @@ export default function App() {
           />
          <Route path="/admin/edit-game/:id" element={<EditGame />} />
          <Route path="/admin/edit-news/:id" element={<EditNews />} />
+         <Route path="/admin/edit-category/:id" element={<EditCategory />} />
 
         </Routes>
   );

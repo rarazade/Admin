@@ -276,33 +276,49 @@ const AdminDashboard = () => {
               <Menu size={20} />
             </button>
           </div>
-          <nav className="space-y-4">
-            <div>
-              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">Games</p>}
-              <button onClick={() => setActiveTab("games")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "games" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
-                <Gamepad2 size={18} /> {!isCollapsed && "Manage Games"}
-              </button>
-              <button onClick={() => setActiveTab("categories")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "categories" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
-                <Layers size={18} /> {!isCollapsed && "Manage Categories"}
-              </button>
-            </div>
-            <div>
-              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">News</p>}
-              <button onClick={() => setActiveTab("news")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "news" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
-                <Newspaper size={18} /> {!isCollapsed && "Manage News"}
-              </button>
-            </div>
-            <div>
-              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">Jumbotron</p>}
-              <button onClick={() => setActiveTab("jumbotron")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "jumbotron" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
-                <Monitor size={18} /> {!isCollapsed && "Manage Jumbotron"}
-              </button>
-            </div>
-          </nav>
+         <nav className="flex flex-col gap-4">
+          <button
+            onClick={() => setActiveTab("games")}
+            className={`flex items-center justify-center ${!isCollapsed ? "justify-start px-4" : "px-0"} py-2 rounded ${activeTab === "games" ? "bg-blue-600" : "hover:bg-gray-700"}`}
+          >
+            <Gamepad2 size={18} />
+            {!isCollapsed && <span className="ml-2">Manage Games</span>}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("categories")}
+            className={`flex items-center justify-center ${!isCollapsed ? "justify-start px-4" : "px-0"} py-2 rounded ${activeTab === "categories" ? "bg-blue-600" : "hover:bg-gray-700"}`}
+          >
+            <Layers size={18} />
+            {!isCollapsed && <span className="ml-2">Manage Categories</span>}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("news")}
+            className={`flex items-center justify-center ${!isCollapsed ? "justify-start px-4" : "px-0"} py-2 rounded ${activeTab === "news" ? "bg-blue-600" : "hover:bg-gray-700"}`}
+          >
+            <Newspaper size={18} />
+            {!isCollapsed && <span className="ml-2">Manage News</span>}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("jumbotron")}
+            className={`flex items-center justify-center ${!isCollapsed ? "justify-start px-4" : "px-0"} py-2 rounded ${activeTab === "jumbotron" ? "bg-blue-600" : "hover:bg-gray-700"}`}
+          >
+            <Monitor size={18} />
+            {!isCollapsed && <span className="ml-2">Manage Jumbotron</span>}
+          </button>
+        </nav>
+
         </div>
-        <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600 px-4 py-2 rounded hover:bg-red-700 w-full">
-          <LogOut size={18} /> {!isCollapsed && "Logout"}
+        <button
+          onClick={handleLogout}
+          className={`flex items-center ${!isCollapsed ? "justify-start px-4 w-full" : "justify-center w-10"} gap-2 bg-red-600 py-2 rounded hover:bg-red-700`}
+        >
+          <LogOut size={18} />
+          {!isCollapsed && <span>Logout</span>}
         </button>
+
       </aside>
 
       {/* Content */}
