@@ -9,6 +9,8 @@ const AddGame = () => {
   const [releaseDate, setReleaseDate] = useState("");
   const [category, setCategory] = useState([]);
   const [img, setMainImage] = useState(null);
+  const [screenshots, setScreenshots] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [categories, setCategories] = useState([]);
@@ -58,6 +60,14 @@ const AddGame = () => {
     setMainImage(e.target.files[0]);
   };
 
+  const handleScreenshotsChange = (e) => {
+    setScreenshots(Array.from(e.target.files));
+  };
+
+  const handleVideosChange = (e) => {
+    setVideos(Array.from(e.target.files));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -97,6 +107,12 @@ const AddGame = () => {
     formData.append("platforms", JSON.stringify([platform]));
     formData.append("categoryIds", JSON.stringify(category));
     formData.append("img", img);
+    screenshots.forEach((file) => {
+      formData.append("screenshots", file);
+    });
+    videos.forEach((file) => {
+      formData.append("videos", file);
+    });
 
     formData.append("requirements", JSON.stringify(requirements));
 
@@ -205,6 +221,27 @@ const AddGame = () => {
             onChange={handleMainImageChange}
             className="w-full text-gray-300"
             required
+          />
+        </div>
+
+        <div>
+          <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleScreenshotsChange}
+          className="w-full text-gray-300"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold mb-1">Videos:</label>
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={handleVideosChange}
+            className="w-full text-gray-300"
           />
         </div>
 

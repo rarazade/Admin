@@ -14,6 +14,10 @@ export default function EditGame() {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [image, setImage] = useState(null);
   const [previewImg, setPreviewImg] = useState(null);
+  const [screenshots, setScreenshots] = useState([]); // untuk file baru
+  const [videos, setVideos] = useState([]);
+  const [existingScreenshots, setExistingScreenshots] = useState([]); // untuk preview lama
+  const [existingVideos, setExistingVideos] = useState([]);
 
   // System Requirements states
   const [minCpu, setMinCpu] = useState("");
@@ -43,7 +47,7 @@ export default function EditGame() {
         gameData.categories?.map((catObj) => catObj.category.id) || []
       );
       setPreviewImg(`http://localhost:3000/uploads/${gameData.img}`);
-      
+
       let sysReqs = gameData.requirements;
       if (typeof sysReqs === "string") {
         try {
@@ -68,6 +72,18 @@ export default function EditGame() {
         setRecStorage(recReq?.storage || "");
       }
 
+      setExistingScreenshots(
+        gameData.screenshots?.map(
+          (s) => `http://localhost:3000/uploads/${s.url}`
+        ) || []
+      );
+
+      setExistingVideos(
+        gameData.videos?.map(
+          (v) => `http://localhost:3000/uploads/${v.url}`
+        ) || []
+      );
+
       const categoriesRes = await axios.get("http://localhost:3000/api/categories");
       setCategories(categoriesRes.data);
     } catch (error) {
@@ -77,6 +93,15 @@ export default function EditGame() {
 
   fetchData();
 }, [id]);
+
+  const handleScreenshotsChange = (e) => {
+  setScreenshots([...e.target.files]);
+  };
+
+  const handleVideosChange = (e) => {
+    setVideos([...e.target.files]);
+  };
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -124,7 +149,23 @@ export default function EditGame() {
   
   if (image) {
     formData.append("img", image);
-  }
+  };
+
+  if (screenshots && screenshots.length > 0) {
+  Array.from(screenshots).forEach((file) => {
+    formData.append("screenshots", file);
+  });
+}
+
+if (videos && videos.length > 0) {
+  Array.from(videos).forEach((file) => {
+    formData.append("videos", file);
+  });
+}
+
+
+
+  
   
   // console.log(selectedCategories)
   console.log(Object.fromEntries(formData))
@@ -142,9 +183,17 @@ export default function EditGame() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 text-white">
-      <h2 className="text-2xl font-bold mb-4">Edit Game</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className=" bg-[#1f242b] text-white p-4">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Edit Game</h1>
+        <button
+          onClick={() => navigate("/admin/dashboard")}
+          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl" encType="multipart/form-data">
         <div>
           <label className="block mb-1">Title</label>
           <input
@@ -233,6 +282,59 @@ export default function EditGame() {
             onChange={handleImageChange}
           />
         </div>
+
+        {/* Screenshots */}
+        <div>
+          <h3 className="font-semibold mb-2">Screenshots</h3>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="w-full p-2 bg-[#292F36] border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            onChange={handleScreenshotsChange}
+          />
+
+          {/* Preview Screenshots */}
+          {screenshots.length > 0 && (
+            <div className="flex gap-2 flex-wrap mt-2">
+              {screenshots.map((src, idx) => (
+                <img
+                  key={idx}
+                  src={typeof src === "string" ? src : URL.createObjectURL(src)}
+                  alt={`screenshot-${idx}`}
+                  className="w-32 h-32 object-cover border border-gray-500 rounded"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Videos */}
+        <div>
+          <h3 className="font-semibold mb-2">Videos</h3>
+          <input
+            type="file"
+            accept="video/*"
+            multiple
+            className="w-full p-2 bg-[#292F36] border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            onChange={handleVideosChange}
+          />
+
+          {/* Preview Videos */}
+          {videos.length > 0 && (
+            <div className="flex gap-2 flex-wrap mt-2">
+              {videos.map((src, idx) => (
+                <video
+                  key={idx}
+                  src={typeof src === "string" ? src : URL.createObjectURL(src)}
+                  controls
+                  className="w-48 border border-gray-500 rounded"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
 
         {/* System Requirements Minimum */}
         <div>
