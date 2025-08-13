@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Gamepad2, Layers, Newspaper, Monitor, LogOut, Menu } from "lucide-react";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("games");
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [games, setGames] = useState([]);
+  const [selectedGame, setSelectedGame] = useState("");
   const [news, setNews] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [jumbotrons, setJumbotrons] = useState([]);
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    fetchData();
+  }, [activeTab]);
 
   const fetchData = async () => {
     try {
@@ -21,19 +29,29 @@ const AdminDashboard = () => {
       } else if (activeTab === "categories") {
         const res = await axios.get("http://localhost:3000/api/categories");
         setCategories(res.data);
+      } else if (activeTab === "jumbotron") {
+        const res = await axios.get("http://localhost:3000/api/jumbotrons");
+        setJumbotrons(res.data);
       }
     } catch (error) {
       console.error("Failed to fetch:", error.message);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+  const handleAdd = () => {
+    fetch("http://localhost:3000/api/jumbotrons", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ gameId: selectedGame })
+    }).then(() => { 
+      setSelectedGame(""); 
+      fetchData(); 
+    });
+  };
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // hapus token
-    navigate("/admin/login"); // arahkan ke login
+    localStorage.removeItem("token");
+    navigate("/admin/login");
   };
 
   const handleDelete = async (type, id) => {
@@ -42,9 +60,7 @@ const AdminDashboard = () => {
 
     try {
       await axios.delete(`http://localhost:3000/api/${type}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (type === "games") {
@@ -53,6 +69,8 @@ const AdminDashboard = () => {
         setNews((prev) => prev.filter((item) => item.id !== id));
       } else if (type === "categories") {
         setCategories((prev) => prev.filter((item) => item.id !== id));
+      } else if (type === "jumbotrons") {
+        setJumbotrons((prev) => prev.filter((item) => item.id !== id));
       }
     } catch (err) {
       console.error("Delete error:", err);
@@ -206,38 +224,91 @@ const AdminDashboard = () => {
       );
     }
 
+    if (activeTab === "jumbotron") {
+      return (
+        <>
+          <div className="flex gap-4 mb-6">
+            <select value={selectedGame} onChange={(e) => setSelectedGame(e.target.value)} className="border p-2 rounded bg-[#292F36]">
+              <option>Pilih Game</option>
+              {games.map(g => 
+              <option key={g.id} value={g.id}>{g.title}</option>)}
+            </select>
+            <button onClick={handleAdd} disabled={!selectedGame || jumbotrons.length >= 5} className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50">
+              Tambah
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-96 border text-left text-sm">
+              <thead className="bg-gray-800 text-white">
+                <tr>
+                  <th className="py-2 px-4">Game</th>
+                  <th className="py-2 px-4">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="text-white">
+                {jumbotrons.map((item) => (
+                  <tr key={item.id} className="border-t border-gray-700">
+                    <td className="py-2 px-4">{item.game?.title}</td>
+                    <td className="py-2 px-4">
+                      <TableActionButtons type="jumbotrons" id={item.id} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      );
+    }
+
     return null;
   };
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 px-4 py-2 rounded hover:bg-red-700"
-        >
-          Logout
+    <div className="flex bg-gray-900 min-h-screen text-white">
+      {/* Sidebar */}
+      <aside className={`bg-gray-800 p-4 flex flex-col justify-between shadow-lg transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"}`}>
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            {!isCollapsed && <h1 className="text-2xl font-bold">Admin Panel</h1>}
+            <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-1 hover:bg-gray-700 rounded">
+              <Menu size={20} />
+            </button>
+          </div>
+          <nav className="space-y-4">
+            <div>
+              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">Games</p>}
+              <button onClick={() => setActiveTab("games")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "games" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
+                <Gamepad2 size={18} /> {!isCollapsed && "Manage Games"}
+              </button>
+              <button onClick={() => setActiveTab("categories")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "categories" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
+                <Layers size={18} /> {!isCollapsed && "Manage Categories"}
+              </button>
+            </div>
+            <div>
+              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">News</p>}
+              <button onClick={() => setActiveTab("news")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "news" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
+                <Newspaper size={18} /> {!isCollapsed && "Manage News"}
+              </button>
+            </div>
+            <div>
+              {!isCollapsed && <p className="text-gray-400 uppercase text-xs mb-2">Jumbotron</p>}
+              <button onClick={() => setActiveTab("jumbotron")} className={`flex items-center gap-2 w-full text-left px-4 py-2 rounded ${activeTab === "jumbotron" ? "bg-blue-600" : "hover:bg-gray-700"}`}>
+                <Monitor size={18} /> {!isCollapsed && "Manage Jumbotron"}
+              </button>
+            </div>
+          </nav>
+        </div>
+        <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600 px-4 py-2 rounded hover:bg-red-700 w-full">
+          <LogOut size={18} /> {!isCollapsed && "Logout"}
         </button>
-      </div>
+      </aside>
 
-      <div className="flex gap-4 mb-6">
-        {["games", "news", "categories"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-md capitalize ${
-              activeTab === tab
-                ? "bg-blue-600 text-white"
-                : "bg-gray-300 text-black hover:bg-gray-400"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {renderTable()}
+      {/* Content */}
+      <main className="flex-1 p-6">
+        {renderTable()}
+      </main>
     </div>
   );
 };

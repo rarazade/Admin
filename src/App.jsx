@@ -32,7 +32,6 @@ export default function App() {
          <Route path="/admin/edit-game/:id" element={<EditGame />} />
          <Route path="/admin/edit-news/:id" element={<EditNews />} />
 
-
         </Routes>
   );
 }
