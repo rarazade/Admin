@@ -133,8 +133,7 @@ const AddGame = () => {
       setError("");
       setTimeout(() => navigate("/admin/dashboard"), 1500);
     } catch (error) {
-      console.error("Error creating game:", error);
-      setError("Gagal membuat game");
+      setError(error.response.data.message);
       setSuccess("");
     } finally {
       setIsSubmitting(false); // ✅ Selesai loading

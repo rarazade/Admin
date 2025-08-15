@@ -17,6 +17,7 @@ export default function EditGame() {
   const [previewImg, setPreviewImg] = useState(null);
   const [screenshots, setScreenshots] = useState([]); // untuk file baru
   const [videos, setVideos] = useState([]);
+  const [error, setError] = useState("")
   const [existingScreenshots, setExistingScreenshots] = useState([]); // untuk preview lama
   const [existingVideos, setExistingVideos] = useState([]);
 
@@ -206,6 +207,7 @@ if (videos && videos.length > 0) {
       });
       navigate("/admin/dashboard");
     } catch (error) {
+      setError(error.response.data.message)
       console.error("Update failed:", error);
     }
   };
@@ -222,6 +224,7 @@ if (videos && videos.length > 0) {
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4 max-w-xl" encType="multipart/form-data">
+        {error && <p className="text-red-500">{error}</p>}
         <div>
           <label className="block mb-1">Title</label>
           <input
